@@ -1,0 +1,13 @@
+{
+  "name": "bridge",
+  "displayName": "AgentNotch Session Bridge",
+  "description": "Lets AgentNotch select existing terminals, Codex conversations and Claude Code sessions in this window.",
+  "publisher": "agentnotch",
+  "version": "0.1.0",
+  "engines": { "vscode": "^1.95.0" },
+  "main": "./extension.js",
+  "activationEvents": ["*"],
+  "extensionKind": ["ui"],
+  "capabilities": { "untrustedWorkspaces": { "supported": true } },
+  "license": "MIT"
+}

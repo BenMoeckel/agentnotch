@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v5
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build app
+        run: |
+          xcodebuild \
+            -project AgentNotch.xcodeproj \
+            -scheme AgentNotch \
+            -configuration Debug \
+            -derivedDataPath build/ci-derived-data \
+            CODE_SIGNING_ALLOWED=NO \
+            build

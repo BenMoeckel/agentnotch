@@ -1,0 +1,343 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		E0295AF1D6BB52AD9FB8B48D /* AgentNotchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B27998B504B5D798B87A468 /* AgentNotchApp.swift */; };
+		1A37791F6076534389EAA2B4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D8DE2AE1AC0E5B3D97E62F66 /* AppDelegate.swift */; };
+		A117EBB444125D02BA3BCB0E /* CGSSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E325CF6EAAF5F4D8BA8E60F /* CGSSpace.swift */; };
+		7AA5A3EFE3E15A889B6B9A6A /* NotchSpaceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8950E2799F7458CA891F993B /* NotchSpaceManager.swift */; };
+		57D7215F2A9F5E9AB6B53E6A /* NotchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C25B9A364C55B9DACB1050B /* NotchDetector.swift */; };
+		3BA0513C56C1571783CDF750 /* NotchPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 921E16ED5D7A550AB7E7CDC0 /* NotchPanel.swift */; };
+		5B424B1991065177BE7F21E0 /* AgentModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 713F4F0BA616561995749AC7 /* AgentModel.swift */; };
+		9EDFE92B8EF2587592AC24B1 /* AgentLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = E82986B40C475212BA1B81B0 /* AgentLocation.swift */; };
+		6A3F24A54DA65D4C83CAE95C /* AgentClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CE02CF25EAD556A9BFA08F5 /* AgentClient.swift */; };
+		A574E6A7B21A5CB9A8FC1AC3 /* ProcessDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4DBC2583D815B0CAC9B877D /* ProcessDiscovery.swift */; };
+		7893309355D854D6996F5C70 /* SessionNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C114562995594383FC1990 /* SessionNavigator.swift */; };
+		CB3179E8279B579BA09A22EE /* AgentEventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DC4AB93C475548AB253A5D2 /* AgentEventStore.swift */; };
+		074CBF6F3DEF5CE88913DA53 /* HerdrProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC412ECB39345D119893D058 /* HerdrProvider.swift */; };
+		51C63B71FF6D5FCCA35DD8D2 /* LocalCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 983F4A48C6AE53719758E274 /* LocalCommand.swift */; };
+		AE3154615BA654DCA8670E58 /* TerminalIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 999116DAFEB35CEA8C784C8C /* TerminalIntegration.swift */; };
+		0C0319CBF8D85FEF8CCFBEF1 /* TmuxIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 978941475CE155E0AB6F4DD7 /* TmuxIntegration.swift */; };
+		4A508A13899F571DB81A6263 /* VSCodeIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99D5E7F926115EE4AA2E978C /* VSCodeIntegration.swift */; };
+		436AC38D91DA5B4084876089 /* EditorBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20B61953B3A5714BB08D1B9 /* EditorBridge.swift */; };
+		164A0708DB605F8CA5D4F1B6 /* LocalRPC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BC509880D5E5030A63BABDE /* LocalRPC.swift */; };
+		940006B10F995C8BACD4988E /* NativeSessionIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBFA9156D3EA51AAAA3C385E /* NativeSessionIntegration.swift */; };
+		64A6B89059D45C5FB7812856 /* NotchShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 828C457F026950A58A3ABC43 /* NotchShape.swift */; };
+		31FD04D8B63F5F8AB1F6F5B1 /* AgentIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD823231EEF566BBCDA648C /* AgentIcon.swift */; };
+		4801D0A66787510EBC78B55D /* AgentRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC81C2DCD44754A580155E06 /* AgentRowView.swift */; };
+		808D06BE438C5250818297B1 /* NotchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14CC5D8982B5512589754788 /* NotchBarView.swift */; };
+		FE2A2ACA41DB5C59BCCFFB55 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 014220AEC88F560FA873CC5E /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0B27998B504B5D798B87A468 /* AgentNotchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentNotchApp.swift; sourceTree = "<group>"; };
+		D8DE2AE1AC0E5B3D97E62F66 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		7E325CF6EAAF5F4D8BA8E60F /* CGSSpace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CGSSpace.swift; sourceTree = "<group>"; };
+		8950E2799F7458CA891F993B /* NotchSpaceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchSpaceManager.swift; sourceTree = "<group>"; };
+		7C25B9A364C55B9DACB1050B /* NotchDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchDetector.swift; sourceTree = "<group>"; };
+		921E16ED5D7A550AB7E7CDC0 /* NotchPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchPanel.swift; sourceTree = "<group>"; };
+		713F4F0BA616561995749AC7 /* AgentModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentModel.swift; sourceTree = "<group>"; };
+		E82986B40C475212BA1B81B0 /* AgentLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentLocation.swift; sourceTree = "<group>"; };
+		6CE02CF25EAD556A9BFA08F5 /* AgentClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentClient.swift; sourceTree = "<group>"; };
+		E4DBC2583D815B0CAC9B877D /* ProcessDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessDiscovery.swift; sourceTree = "<group>"; };
+		C8C114562995594383FC1990 /* SessionNavigator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionNavigator.swift; sourceTree = "<group>"; };
+		3DC4AB93C475548AB253A5D2 /* AgentEventStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentEventStore.swift; sourceTree = "<group>"; };
+		BC412ECB39345D119893D058 /* HerdrProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HerdrProvider.swift; sourceTree = "<group>"; };
+		983F4A48C6AE53719758E274 /* LocalCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalCommand.swift; sourceTree = "<group>"; };
+		999116DAFEB35CEA8C784C8C /* TerminalIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalIntegration.swift; sourceTree = "<group>"; };
+		978941475CE155E0AB6F4DD7 /* TmuxIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TmuxIntegration.swift; sourceTree = "<group>"; };
+		99D5E7F926115EE4AA2E978C /* VSCodeIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VSCodeIntegration.swift; sourceTree = "<group>"; };
+		B20B61953B3A5714BB08D1B9 /* EditorBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorBridge.swift; sourceTree = "<group>"; };
+		2BC509880D5E5030A63BABDE /* LocalRPC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRPC.swift; sourceTree = "<group>"; };
+		CBFA9156D3EA51AAAA3C385E /* NativeSessionIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeSessionIntegration.swift; sourceTree = "<group>"; };
+		828C457F026950A58A3ABC43 /* NotchShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchShape.swift; sourceTree = "<group>"; };
+		7FD823231EEF566BBCDA648C /* AgentIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentIcon.swift; sourceTree = "<group>"; };
+		014220AEC88F560FA873CC5E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DC81C2DCD44754A580155E06 /* AgentRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentRowView.swift; sourceTree = "<group>"; };
+		14CC5D8982B5512589754788 /* NotchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchBarView.swift; sourceTree = "<group>"; };
+		939F05133CFB5489AD3FB05E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E01CF76D74CF55C1AE61227D /* AgentNotch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AgentNotch.entitlements; sourceTree = "<group>"; };
+		070ED390D748523F97D68D7F /* AgentNotch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AgentNotch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		4FD23C17AA5B5122B5455981 = {
+			isa = PBXGroup;
+			children = (
+				D72B9BD48B5757D5BFBF5EC2 /* AgentNotch */,
+				F16E774F615F5E748F955CCF /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F16E774F615F5E748F955CCF = {
+			isa = PBXGroup;
+			children = (
+				070ED390D748523F97D68D7F /* AgentNotch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D72B9BD48B5757D5BFBF5EC2 = {
+			isa = PBXGroup;
+			children = (
+				0B27998B504B5D798B87A468 /* AgentNotchApp.swift */,
+				D8DE2AE1AC0E5B3D97E62F66 /* AppDelegate.swift */,
+				939F05133CFB5489AD3FB05E /* Info.plist */,
+				014220AEC88F560FA873CC5E /* Assets.xcassets */,
+				E01CF76D74CF55C1AE61227D /* AgentNotch.entitlements */,
+				5FAAF26768585D58AF91788C /* Window */,
+				B2544C696F9B51969F26CF40 /* Agents */,
+				E659306C4C7B551EAE08E8AE /* Integrations */,
+				9596A76A08E752149B1FBC2B /* Views */,
+			);
+			path = AgentNotch;
+			sourceTree = "<group>";
+		};
+		5FAAF26768585D58AF91788C = {
+			isa = PBXGroup;
+			children = (
+				7E325CF6EAAF5F4D8BA8E60F /* CGSSpace.swift */,
+				8950E2799F7458CA891F993B /* NotchSpaceManager.swift */,
+				7C25B9A364C55B9DACB1050B /* NotchDetector.swift */,
+				921E16ED5D7A550AB7E7CDC0 /* NotchPanel.swift */,
+			);
+			path = Window;
+			sourceTree = "<group>";
+		};
+		B2544C696F9B51969F26CF40 = {
+			isa = PBXGroup;
+			children = (
+				6CE02CF25EAD556A9BFA08F5 /* AgentClient.swift */,
+				3DC4AB93C475548AB253A5D2 /* AgentEventStore.swift */,
+				E82986B40C475212BA1B81B0 /* AgentLocation.swift */,
+				713F4F0BA616561995749AC7 /* AgentModel.swift */,
+				E4DBC2583D815B0CAC9B877D /* ProcessDiscovery.swift */,
+				C8C114562995594383FC1990 /* SessionNavigator.swift */,
+			);
+			path = Agents;
+			sourceTree = "<group>";
+		};
+		E659306C4C7B551EAE08E8AE = {
+			isa = PBXGroup;
+			children = (
+				BC412ECB39345D119893D058 /* HerdrProvider.swift */,
+				983F4A48C6AE53719758E274 /* LocalCommand.swift */,
+				999116DAFEB35CEA8C784C8C /* TerminalIntegration.swift */,
+				978941475CE155E0AB6F4DD7 /* TmuxIntegration.swift */,
+				99D5E7F926115EE4AA2E978C /* VSCodeIntegration.swift */,
+				B20B61953B3A5714BB08D1B9 /* EditorBridge.swift */,
+				2BC509880D5E5030A63BABDE /* LocalRPC.swift */,
+				CBFA9156D3EA51AAAA3C385E /* NativeSessionIntegration.swift */,
+			);
+			path = Integrations;
+			sourceTree = "<group>";
+		};
+		9596A76A08E752149B1FBC2B = {
+			isa = PBXGroup;
+			children = (
+				828C457F026950A58A3ABC43 /* NotchShape.swift */,
+				DC81C2DCD44754A580155E06 /* AgentRowView.swift */,
+				7FD823231EEF566BBCDA648C /* AgentIcon.swift */,
+				14CC5D8982B5512589754788 /* NotchBarView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9879B4537A665A8D808B3A09 /* AgentNotch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9609E1F729DB5ECF91674472 /* Build configuration list for PBXNativeTarget "AgentNotch" */;
+			buildPhases = (
+				11B79CC080385C1EA2411A90 /* Sources */,
+				6F96104718655EC9B148FFC8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AgentNotch;
+			productName = AgentNotch;
+			productReference = 070ED390D748523F97D68D7F /* AgentNotch.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E3E4A8AE9E9A519285AEF88C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = 50A58EE8E00E5CB9B1B1E229 /* Build configuration list for PBXProject "AgentNotch" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 4FD23C17AA5B5122B5455981;
+			productRefGroup = F16E774F615F5E748F955CCF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				9879B4537A665A8D808B3A09 /* AgentNotch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6F96104718655EC9B148FFC8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE2A2ACA41DB5C59BCCFFB55 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		11B79CC080385C1EA2411A90 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E0295AF1D6BB52AD9FB8B48D /* AgentNotchApp.swift in Sources */,
+				1A37791F6076534389EAA2B4 /* AppDelegate.swift in Sources */,
+				A117EBB444125D02BA3BCB0E /* CGSSpace.swift in Sources */,
+				7AA5A3EFE3E15A889B6B9A6A /* NotchSpaceManager.swift in Sources */,
+				57D7215F2A9F5E9AB6B53E6A /* NotchDetector.swift in Sources */,
+				3BA0513C56C1571783CDF750 /* NotchPanel.swift in Sources */,
+				5B424B1991065177BE7F21E0 /* AgentModel.swift in Sources */,
+				9EDFE92B8EF2587592AC24B1 /* AgentLocation.swift in Sources */,
+				6A3F24A54DA65D4C83CAE95C /* AgentClient.swift in Sources */,
+				A574E6A7B21A5CB9A8FC1AC3 /* ProcessDiscovery.swift in Sources */,
+				7893309355D854D6996F5C70 /* SessionNavigator.swift in Sources */,
+				CB3179E8279B579BA09A22EE /* AgentEventStore.swift in Sources */,
+				074CBF6F3DEF5CE88913DA53 /* HerdrProvider.swift in Sources */,
+				51C63B71FF6D5FCCA35DD8D2 /* LocalCommand.swift in Sources */,
+				AE3154615BA654DCA8670E58 /* TerminalIntegration.swift in Sources */,
+				0C0319CBF8D85FEF8CCFBEF1 /* TmuxIntegration.swift in Sources */,
+				4A508A13899F571DB81A6263 /* VSCodeIntegration.swift in Sources */,
+				436AC38D91DA5B4084876089 /* EditorBridge.swift in Sources */,
+				164A0708DB605F8CA5D4F1B6 /* LocalRPC.swift in Sources */,
+				940006B10F995C8BACD4988E /* NativeSessionIntegration.swift in Sources */,
+				64A6B89059D45C5FB7812856 /* NotchShape.swift in Sources */,
+				31FD04D8B63F5F8AB1F6F5B1 /* AgentIcon.swift in Sources */,
+				4801D0A66787510EBC78B55D /* AgentRowView.swift in Sources */,
+				808D06BE438C5250818297B1 /* NotchBarView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		CA01E9CCF5E05F65B39AF37D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		7730C547F0175ED4BF40E59B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		0F60499F2E2155328DB7774C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				APP_PRIVACY_BUILT_IN_USAGE_BUNDLE_IDENTIFIER = "com.benmoeckel.agentnotch";
+				CODE_SIGN_ENTITLEMENTS = AgentNotch/AgentNotch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = AgentNotch/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.benmoeckel.agentnotch";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		1DDE9DB06F525A05A8DA9708 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				APP_PRIVACY_BUILT_IN_USAGE_BUNDLE_IDENTIFIER = "com.benmoeckel.agentnotch";
+				CODE_SIGN_ENTITLEMENTS = AgentNotch/AgentNotch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				INFOPLIST_FILE = AgentNotch/Info.plist;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.benmoeckel.agentnotch";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.0;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		50A58EE8E00E5CB9B1B1E229 /* Build configuration list for PBXProject "AgentNotch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CA01E9CCF5E05F65B39AF37D /* Debug */,
+				7730C547F0175ED4BF40E59B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9609E1F729DB5ECF91674472 /* Build configuration list for PBXNativeTarget "AgentNotch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F60499F2E2155328DB7774C /* Debug */,
+				1DDE9DB06F525A05A8DA9708 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E3E4A8AE9E9A519285AEF88C /* Project object */;
+}
