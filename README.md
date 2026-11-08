@@ -26,7 +26,9 @@ xattr -dr com.apple.quarantine /Applications/AgentNotch.app
 
 ## Use
 
-Hover the notch for one second to expand it. Click a session to jump to its terminal or editor window; the power button quits AgentNotch. It works with Claude Code, Codex, OpenCode, Gemini, Cursor, GitHub Copilot and other coding agents.
+Hover the notch for one second to expand it. Click a session to jump to its terminal or editor window; the power button quits AgentNotch. The chart button next to the power button opens usage statistics with time per agent and project, daily activity (including a streak), and a trend chart. It works with Claude Code, Codex, OpenCode, Gemini, Cursor, GitHub Copilot and other coding agents.
+
+The statistics panel extends down the screen and scrolls through all recorded agents and projects. It includes total working time, active days and average time per active day. Choose 30 days, 90 days, 1 year or All time from the period dropdown. The orange activity heatmap always shows the last 13 weeks. Hover heatmap days and trend bars for detailed values with haptic feedback. The heatmap legend uses fixed thresholds: 0m, under 15m, 15–60m, 1–4h and 4h or more. Available local Claude Code, Codex and OpenCode logs are imported in the background for completed days, including history older than a year. Historical times are estimates; overlapping sessions count only once toward total working time. Other agents are recorded live while AgentNotch runs.
 
 For exact VS Code window navigation, install the optional `AgentNotch-bridge.vsix` from the same release.
 

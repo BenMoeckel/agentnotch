@@ -152,6 +152,7 @@ enum CodexTitle {
 /// The initial snapshot is a baseline, not a batch of new results.
 struct AgentActivity: Equatable {
     private(set) var agents: [AgentInfo] = []
+    private(set) var workingSince: [String: Date] = [:]
     private(set) var completions: [String: UUID] = [:]
     private var completedAgents: [String: AgentInfo] = [:]
     private var completedAt: [String: Date] = [:]
@@ -198,6 +199,18 @@ struct AgentActivity: Equatable {
             completedAt.removeValue(forKey: id)
         }
         let previous = Dictionary(agents.map { ($0.id, $0) }, uniquingKeysWith: { _, last in last })
+        // Keep the current turn's clock through approval requests and view changes.
+        // A finished turn, missing session, or replacement terminal resets it.
+        workingSince = workingSince.filter { id, _ in
+            next.contains { agent in
+                agent.id == id && (agent.state == .working || agent.state == .blocked) &&
+                    previous[id]?.terminalID == agent.terminalID &&
+                    previous[id]?.sameConversation(as: agent) == true
+            }
+        }
+        for agent in next where agent.state == .working && workingSince[agent.id] == nil {
+            workingSince[agent.id] = now
+        }
         for agent in next {
             guard let old = previous[agent.id], old.terminalID == agent.terminalID else {
                 continue

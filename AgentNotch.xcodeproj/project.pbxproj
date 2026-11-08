@@ -31,6 +31,9 @@
 		31FD04D8B63F5F8AB1F6F5B1 /* AgentIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FD823231EEF566BBCDA648C /* AgentIcon.swift */; };
 		4801D0A66787510EBC78B55D /* AgentRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC81C2DCD44754A580155E06 /* AgentRowView.swift */; };
 		808D06BE438C5250818297B1 /* NotchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14CC5D8982B5512589754788 /* NotchBarView.swift */; };
+		F0FA263774C65CD58535D755 /* UsageStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D6FF555F20547FB5A10DFF /* UsageStats.swift */; };
+		667EC73747C956C2838245AC /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FDB603E060501BA18ACFA6 /* StatsView.swift */; };
+		D6A9A95703295EEAB103C5CB /* UsageBackfill.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9100E9A06CD56DDB2BD4F85 /* UsageBackfill.swift */; };
 		FE2A2ACA41DB5C59BCCFFB55 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 014220AEC88F560FA873CC5E /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
@@ -62,6 +65,9 @@
 		14CC5D8982B5512589754788 /* NotchBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchBarView.swift; sourceTree = "<group>"; };
 		939F05133CFB5489AD3FB05E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E01CF76D74CF55C1AE61227D /* AgentNotch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AgentNotch.entitlements; sourceTree = "<group>"; };
+		F6D6FF555F20547FB5A10DFF /* UsageStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageStats.swift; sourceTree = "<group>"; };
+		E8FDB603E060501BA18ACFA6 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
+		B9100E9A06CD56DDB2BD4F85 /* UsageBackfill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageBackfill.swift; sourceTree = "<group>"; };
 		070ED390D748523F97D68D7F /* AgentNotch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AgentNotch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -121,6 +127,8 @@
 				713F4F0BA616561995749AC7 /* AgentModel.swift */,
 				E4DBC2583D815B0CAC9B877D /* ProcessDiscovery.swift */,
 				C8C114562995594383FC1990 /* SessionNavigator.swift */,
+				F6D6FF555F20547FB5A10DFF /* UsageStats.swift */,
+				B9100E9A06CD56DDB2BD4F85 /* UsageBackfill.swift */,
 			);
 			path = Agents;
 			sourceTree = "<group>";
@@ -147,6 +155,7 @@
 				DC81C2DCD44754A580155E06 /* AgentRowView.swift */,
 				7FD823231EEF566BBCDA648C /* AgentIcon.swift */,
 				14CC5D8982B5512589754788 /* NotchBarView.swift */,
+				E8FDB603E060501BA18ACFA6 /* StatsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -238,6 +247,9 @@
 				31FD04D8B63F5F8AB1F6F5B1 /* AgentIcon.swift in Sources */,
 				4801D0A66787510EBC78B55D /* AgentRowView.swift in Sources */,
 				808D06BE438C5250818297B1 /* NotchBarView.swift in Sources */,
+				F0FA263774C65CD58535D755 /* UsageStats.swift in Sources */,
+				667EC73747C956C2838245AC /* StatsView.swift in Sources */,
+				D6A9A95703295EEAB103C5CB /* UsageBackfill.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

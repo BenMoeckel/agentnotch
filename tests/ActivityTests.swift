@@ -10,6 +10,23 @@ struct ActivityTests {
     }
 
     static func main() throws {
+        let clockStart = Date(timeIntervalSince1970: 1_000_000)
+        var clock = AgentActivity()
+        clock.update([try agent("working")], now: clockStart)
+        clock.update([try agent("working")], now: clockStart.addingTimeInterval(5))
+        precondition(clock.workingSince["a"] == clockStart, "Polling preserves the turn start")
+        clock.update([try agent("blocked")], now: clockStart.addingTimeInterval(10))
+        clock.update([try agent("working")], now: clockStart.addingTimeInterval(15))
+        precondition(clock.workingSince["a"] == clockStart, "Approval requests preserve the turn clock")
+        clock.update([try agent("idle")], now: clockStart.addingTimeInterval(20))
+        precondition(clock.workingSince.isEmpty, "Finishing work clears the clock")
+        clock.update([try agent("working")], now: clockStart.addingTimeInterval(25))
+        precondition(clock.workingSince["a"] == clockStart.addingTimeInterval(25), "A new turn starts a new clock")
+        clock.update([try agent("working", terminal: "replacement")], now: clockStart.addingTimeInterval(30))
+        precondition(clock.workingSince["a"] == clockStart.addingTimeInterval(30), "A replacement terminal resets the clock")
+        clock.update([], now: clockStart.addingTimeInterval(35))
+        precondition(clock.workingSince.isEmpty, "Removed agents release their clocks")
+
         var discovered = AgentActivity()
         discovered.update([try agent("unknown", id: "backend"), try agent("idle", id: "idle"),
                            try agent("done", id: "old-result")])

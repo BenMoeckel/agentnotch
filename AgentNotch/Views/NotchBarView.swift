@@ -9,6 +9,10 @@ struct NotchBarView: View {
     private var cameraWidth: CGFloat { placement.geometry.cameraWidth }
     let onSizeChange: (CGSize) -> Void
     @State private var isExpanded = false
+    @State private var showStats = false
+    @State private var statsRange: StatsRange = .month
+    @State private var menuTracking = false
+    @State private var rangeDropdownOpen = false
     @State private var hoverTask: Task<Void, Never>?
     @State private var focusError: String?
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
@@ -23,10 +27,19 @@ struct NotchBarView: View {
                     cameraWidth: cameraWidth, height: compactSize.height)
     }
 
+    /// Statistics keep the session panel's width but extend down the display.
+    private var expandedSize: CGSize {
+        let screen = NSScreen.screens.first { $0.frame.contains(placement.geometry.frame.origin) }
+        let availableHeight = screen.map { placement.geometry.frame.maxY - $0.visibleFrame.minY - 16 } ?? 740
+        return CGSize(width: max(layout.compactSize.width, 600),
+               height: showStats ? min(740, availableHeight)
+                   : 6 + 40 + 40 + CGFloat(rows) * rowHeight + 12)
+    }
+
     private var panelSize: CGSize {
         guard isExpanded else { return layout.compactSize }
-        return CGSize(width: max(layout.compactSize.width, 600),
-                      height: 6 + 40 + 40 + CGFloat(rows) * rowHeight + 12 + (focusError == nil ? 0 : 40))
+        guard !showStats, focusError != nil else { return expandedSize }
+        return CGSize(width: expandedSize.width, height: expandedSize.height + 40)
     }
 
     var body: some View {
@@ -42,10 +55,22 @@ struct NotchBarView: View {
         .onDisappear {
             cancelHoverExpansion()
             isExpanded = false
+            showStats = false
+            rangeDropdownOpen = false
         }
         .onChange(of: panelSize, initial: true) { _, size in onSizeChange(size) }
+        .onReceive(NotificationCenter.default.publisher(for: NSMenu.didBeginTrackingNotification)) { _ in
+            menuTracking = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSMenu.didEndTrackingNotification)) { _ in
+            menuTracking = false
+            let frame = NSRect(x: placement.geometry.frame.midX - panelSize.width / 2,
+                               y: placement.geometry.frame.maxY - panelSize.height,
+                               width: panelSize.width, height: panelSize.height)
+            if !frame.contains(NSEvent.mouseLocation) { handleHover(false) }
+        }
         .onChange(of: layout.isEmpty) { _, empty in
-            if empty {
+            if empty && !showStats {
                 cancelHoverExpansion()
                 isExpanded = false
             }
@@ -58,8 +83,17 @@ struct NotchBarView: View {
     private func handleHover(_ hovering: Bool) {
         cancelHoverExpansion()
         guard hovering else {
+            guard !menuTracking else { return }
             guard isExpanded else { return }
+            // SwiftUI can emit an exit while rebuilding content under the
+            // pointer. Only a real exit from the panel should collapse it.
+            let frame = NSRect(x: placement.geometry.frame.midX - panelSize.width / 2,
+                               y: placement.geometry.frame.maxY - panelSize.height,
+                               width: panelSize.width, height: panelSize.height)
+            guard !frame.contains(NSEvent.mouseLocation) else { return }
             isExpanded = false
+            showStats = false
+            rangeDropdownOpen = false
             NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .now)
             return
         }
@@ -125,66 +159,180 @@ struct NotchBarView: View {
 
     private var expandedContent: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 8) {
-                Toggle(isOn: $launchAtLogin) {
-                    Text("Autostart")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.white)
-                }
-                .toggleStyle(.switch)
-                .tint(.accentColor)
-                .controlSize(.mini)
-                .fixedSize()
-                .help("AgentNotch beim Login automatisch starten")
-                .accessibilityLabel("Beim Login starten")
-                .onChange(of: launchAtLogin) { _, newValue in
-                    do {
-                        if newValue { try SMAppService.mainApp.register() }
-                        else { try SMAppService.mainApp.unregister() }
-                    } catch {
-                        launchAtLogin = SMAppService.mainApp.status == .enabled
+            expandedHeader
+                .zIndex(1)
+            if showStats {
+                StatsView(tracker: client.usage, range: statsRange)
+                    .overlay {
+                        if rangeDropdownOpen {
+                            Color.black.opacity(0.001)
+                                .onTapGesture { rangeDropdownOpen = false }
+                        }
                     }
+            } else {
+                HStack(alignment: .top, spacing: 0) {
+                    column(active, title: "Active · \(active.count)", completed: false)
+                    Rectangle().fill(.white.opacity(0.15)).frame(width: 1)
+                    column(results, title: "New results · \(results.count)", completed: true)
                 }
-                Spacer(minLength: 0)
-                Button { NSApp.terminate(nil) } label: {
-                    Image(systemName: "power")
-                        .font(.system(size: 12, weight: .semibold))
+                // Keep errors below the camera/notch and all conversation rows.
+                if let focusError {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(focusError)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.red)
+                            .lineLimit(1)
+                            .help(focusError)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        HStack(spacing: 8) {
+                            permissionButton(.accessibility)
+                            permissionButton(.automation)
+                            Spacer(minLength: 0)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .frame(height: 40)
+                }
+            }
+        }
+        .padding(.top, 6)
+        .padding(.bottom, 12)
+    }
+
+    private var expandedHeader: some View {
+        HStack(spacing: 8) {
+            if showStats {
+                Button {
+                    rangeDropdownOpen = false
+                    showStats = false
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(.white.opacity(0.75))
                         .frame(width: 28, height: 28)
                         .background(.white.opacity(0.08), in: Circle())
                 }
                 .buttonStyle(.plain)
-                .help("AgentNotch beenden")
-                .accessibilityLabel("AgentNotch beenden")
+                .help("Zurück zu den Sessions")
+                .accessibilityLabel("Zurück zu den Sessions")
+
+                Text("Statistics")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.white)
+
+                rangeSelector
+            } else {
+                autostartToggle
             }
-            .padding(.horizontal, 16)
-            .frame(height: 40)
-            HStack(alignment: .top, spacing: 0) {
-                column(active, title: "Active · \(active.count)", completed: false)
-                Rectangle().fill(.white.opacity(0.15)).frame(width: 1)
-                column(results, title: "New results · \(results.count)", completed: true)
+            Spacer(minLength: 0)
+            if !showStats {
+                statsButton
             }
-            // Keep errors below the camera/notch and all conversation rows.
-            if let focusError {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(focusError)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.red)
-                        .lineLimit(1)
-                        .help(focusError)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    HStack(spacing: 8) {
-                        permissionButton(.accessibility)
-                        permissionButton(.automation)
-                        Spacer(minLength: 0)
-                    }
-                }
-                .padding(.horizontal, 16)
-                .frame(height: 40)
+            powerButton
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 40)
+    }
+
+    private var autostartToggle: some View {
+        Toggle(isOn: $launchAtLogin) {
+            Text("Autostart")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.white)
+        }
+        .toggleStyle(.switch)
+        .tint(.accentColor)
+        .controlSize(.mini)
+        .fixedSize()
+        .help("AgentNotch beim Login automatisch starten")
+        .accessibilityLabel("Beim Login starten")
+        .onChange(of: launchAtLogin) { _, newValue in
+            do {
+                if newValue { try SMAppService.mainApp.register() }
+                else { try SMAppService.mainApp.unregister() }
+            } catch {
+                launchAtLogin = SMAppService.mainApp.status == .enabled
             }
         }
-        .padding(.top, 6)
-        .padding(.bottom, 12)
+    }
+
+    private var statsButton: some View {
+        Button { showStats = true } label: {
+            Image(systemName: "chart.bar.xaxis")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.75))
+                .frame(width: 28, height: 28)
+                .background(.white.opacity(0.08), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .help("Statistik anzeigen")
+        .accessibilityLabel("Statistik anzeigen")
+    }
+
+    private var rangeSelector: some View {
+        Button { rangeDropdownOpen.toggle() } label: {
+            HStack(spacing: 8) {
+                Text(statsRange.rawValue)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 8, weight: .bold))
+            }
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(.white.opacity(0.85))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(.white.opacity(0.06), in: Capsule())
+        }
+        .buttonStyle(.plain)
+        .fixedSize()
+        .accessibilityLabel("Zeitraum: \(statsRange.rawValue)")
+        .accessibilityValue(rangeDropdownOpen ? "Expanded" : "Collapsed")
+        .overlay(alignment: .topLeading) {
+            if rangeDropdownOpen {
+                VStack(spacing: 2) {
+                    ForEach(StatsRange.allCases) { range in
+                        Button {
+                            statsRange = range
+                            rangeDropdownOpen = false
+                        } label: {
+                            HStack {
+                                Text(range.rawValue)
+                                Spacer()
+                                if statsRange == range {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.9))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 8)
+                            .background(statsRange == range ? Color.white.opacity(0.08) : .clear,
+                                        in: RoundedRectangle(cornerRadius: 6))
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .padding(5)
+                .frame(width: 150)
+                .background(Color(white: 0.14), in: RoundedRectangle(cornerRadius: 10))
+                .overlay(RoundedRectangle(cornerRadius: 10).stroke(.white.opacity(0.12)))
+                .shadow(color: .black.opacity(0.5), radius: 10, y: 4)
+                .offset(y: 30)
+            }
+        }
+    }
+
+    private var powerButton: some View {
+        Button { NSApp.terminate(nil) } label: {
+            Image(systemName: "power")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.white.opacity(0.75))
+                .frame(width: 28, height: 28)
+                .background(.white.opacity(0.08), in: Circle())
+        }
+        .buttonStyle(.plain)
+        .help("AgentNotch beenden")
+        .accessibilityLabel("AgentNotch beenden")
     }
 
     private func column(_ agents: [AgentInfo], title: String, completed: Bool) -> some View {
@@ -208,7 +356,8 @@ struct NotchBarView: View {
                         ForEach(agents) { agent in
                             ZStack(alignment: .topTrailing) {
                                 Button { openSession(agent, completed: completed) } label: {
-                                    AgentRowView(agent: agent, completed: completed)
+                                    AgentRowView(agent: agent, completed: completed,
+                                                 workingSince: client.activity.workingSince[agent.id])
                                         .frame(height: rowHeight)
                                         .contentShape(Rectangle())
                                 }

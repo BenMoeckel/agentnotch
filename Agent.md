@@ -50,6 +50,7 @@ HerdrProvider (Unix socket) ─┘   └─ AgentActivity (completion tracking)
 | `Agents/AgentClient.swift` | `AgentClient` (ObservableObject) — orchestrates all sources, merges via `SessionMerger`, owns `HerdrProvider` instances per socket |
 | `Agents/ProcessDiscovery.swift` | sysctl process scan; `AgentCatalog` maps executables/packages to agent kinds; `needsArguments` skips KERN_PROCARGS2 for unrecognised processes |
 | `Agents/AgentEventStore.swift` | Reads JSON event files from `~/Library/Application Support/AgentNotch/events/` for agents/extensions that can't be screen-scraped |
+| `Agents/UsageStats.swift` | Persists per-day working time per agent kind and project; powers the statistics dashboard |
 | `Agents/SessionNavigator.swift` | `focus()` — resolves a location to an on-screen window via AX API, AppleScript, or tmux selection |
 | `Integrations/HerdrProvider.swift` | Unix socket RPC to one Herdr daemon instance (`agent.list`, `agent.focus`); multiple instances can run simultaneously |
 | `Integrations/TerminalIntegration.swift` | Screen-scrapes Terminal.app / iTerm2 / Ghostty via AppleScript to infer `AgentState` |
@@ -59,6 +60,7 @@ HerdrProvider (Unix socket) ─┘   └─ AgentActivity (completion tracking)
 | `Window/NotchPanel.swift` | `NSPanel` subclass; lives above the menu bar, never becomes key/main |
 | `Window/NotchSpaceManager.swift` | Keeps the panel on all Spaces via private CGS API |
 | `Views/NotchBarView.swift` | Compact (icon row) ↔ expanded (two-column list) toggle on 1s hover delay |
+| `Views/StatsView.swift` | Statistics dashboard: activity heatmap/streak, trend and agent/project breakdown |
 
 ### Agent detection — three sources, merged
 

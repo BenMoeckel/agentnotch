@@ -210,6 +210,9 @@ enum SessionMerger {
 final class AgentClient: ObservableObject {
     static let shared = AgentClient()
     @Published private(set) var activity = AgentActivity()
+    /// Long-lived usage history for the statistics dashboard. The tracker is
+    /// fed from the same merged snapshot that drives the notch.
+    let usage = UsageTracker()
     var agents: [AgentInfo] { activity.agents }
 
     private let worker = DispatchQueue(label: "com.benmoeckel.agentnotch.discovery", qos: .utility)
@@ -228,6 +231,7 @@ final class AgentClient: ObservableObject {
 
     func connect() {
         guard timer == nil else { return }
+        usage.importLocalHistory()
         generation += 1
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self else { return }
@@ -247,6 +251,7 @@ final class AgentClient: ObservableObject {
         scanning = false
         providers.values.forEach { $0.stop() }
         providers.removeAll()
+        usage.flush()
     }
 
     func acknowledge(_ seen: [String: UUID]) {
@@ -402,6 +407,7 @@ final class AgentClient: ObservableObject {
         var next = activity
         next.update(visible, sessionVisible: true)
         if next != activity { activity = next }
+        usage.record(visible)
     }
 
     func focus(_ agent: AgentInfo, completion: @escaping (String?) -> Void) {

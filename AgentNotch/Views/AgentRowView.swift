@@ -3,6 +3,7 @@ import SwiftUI
 struct AgentRowView: View {
     let agent: AgentInfo
     var completed = false
+    var workingSince: Date? = nil
 
     var body: some View {
         HStack(spacing: 10) {
@@ -17,6 +18,15 @@ struct AgentRowView: View {
                         .font(.system(size: 9))
                     Text(completed ? "New result" : agent.state.label)
                         .font(.system(size: 10))
+                    if !completed, agent.state == .working, let workingSince {
+                        Text(timerInterval: workingSince...Date.distantFuture,
+                             countsDown: false, showsHours: true)
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundStyle(.white.opacity(0.55))
+                            .fixedSize()
+                            .padding(.leading, 3)
+                            .accessibilityLabel("Elapsed time")
+                    }
                 }
                 .foregroundStyle(completed ? Color.green : agent.state.color)
             }

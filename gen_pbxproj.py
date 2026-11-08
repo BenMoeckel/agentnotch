@@ -12,6 +12,21 @@ _id_sequence = itertools.count()
 def uid():
     return uuid.uuid5(uuid.NAMESPACE_URL, f"agentnotch/{next(_id_sequence)}").hex[:24].upper()
 
+# New files use stable IDs so appending them does not renumber every existing
+# build file and group ID (which would turn a two-file addition into a huge
+# project.pbxproj diff).
+STABLE_FILE_IDS = {"UsageStats.swift", "StatsView.swift", "UsageBackfill.swift"}
+
+def file_uid(name):
+    if name in STABLE_FILE_IDS:
+        return uuid.uuid5(uuid.NAMESPACE_URL, f"agentnotch/file/{name}").hex[:24].upper()
+    return uid()
+
+def build_uid(name):
+    if name in STABLE_FILE_IDS:
+        return uuid.uuid5(uuid.NAMESPACE_URL, f"agentnotch/build/{name}").hex[:24].upper()
+    return uid()
+
 # File references
 FILES = [
     ("AgentNotchApp.swift",          "AgentNotch/AgentNotchApp.swift"),
@@ -41,14 +56,17 @@ FILES = [
     ("NotchBarView.swift",           "AgentNotch/Views/NotchBarView.swift"),
     ("Info.plist",                   "AgentNotch/Info.plist"),
     ("AgentNotch.entitlements",      "AgentNotch/AgentNotch.entitlements"),
+    ("UsageStats.swift",             "AgentNotch/Agents/UsageStats.swift"),
+    ("StatsView.swift",              "AgentNotch/Views/StatsView.swift"),
+    ("UsageBackfill.swift",          "AgentNotch/Agents/UsageBackfill.swift"),
 ]
 
 swift_files = [n for n, _ in FILES if n.endswith(".swift")]
 other_files = ["Assets.xcassets"]
 
 # Assign stable IDs
-ids = {name: uid() for name, _ in FILES}
-BUILD_IDS = {name: uid() for name, _ in FILES}
+ids = {name: file_uid(name) for name, _ in FILES}
+BUILD_IDS = {name: build_uid(name) for name, _ in FILES}
 
 TARGET_ID      = uid()
 PROJECT_ID     = uid()
@@ -162,6 +180,8 @@ pbx += f"""/* End PBXFileReference section */
 \t\t\t\t{ids["AgentModel.swift"]} /* AgentModel.swift */,
 \t\t\t\t{ids["ProcessDiscovery.swift"]} /* ProcessDiscovery.swift */,
 \t\t\t\t{ids["SessionNavigator.swift"]} /* SessionNavigator.swift */,
+\t\t\t\t{ids["UsageStats.swift"]} /* UsageStats.swift */,
+\t\t\t\t{ids["UsageBackfill.swift"]} /* UsageBackfill.swift */,
 \t\t\t);
 \t\t\tpath = Agents;
 \t\t\tsourceTree = "<group>";
@@ -188,6 +208,7 @@ pbx += f"""/* End PBXFileReference section */
 \t\t\t\t{ids["AgentRowView.swift"]} /* AgentRowView.swift */,
 \t\t\t\t{ids["AgentIcon.swift"]} /* AgentIcon.swift */,
 \t\t\t\t{ids["NotchBarView.swift"]} /* NotchBarView.swift */,
+\t\t\t\t{ids["StatsView.swift"]} /* StatsView.swift */,
 \t\t\t);
 \t\t\tpath = Views;
 \t\t\tsourceTree = "<group>";
