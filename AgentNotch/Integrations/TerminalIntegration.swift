@@ -50,10 +50,23 @@ enum TerminalIntegration {
         return surfaceID == nil && tty == nil && count == 1
     }
 
+    static func automationStatus(_ bundleID: String) -> OSStatus {
+        let target = NSAppleEventDescriptor(bundleIdentifier: bundleID)
+        return AEDeterminePermissionToAutomateTarget(target.aeDesc, typeWildCard, typeWildCard, false)
+    }
+
     static func mayRead(_ bundleID: String) -> Bool {
         // Polling must never trigger an Automation permission prompt.
+        automationStatus(bundleID) == noErr
+    }
+
+    /// Focus detection needs permission to ask the terminal which surface is
+    /// selected. Request it once for a terminal that actually hosts a session,
+    /// instead of silently treating every completion as unseen.
+    static func requestAccessIfNeeded(_ bundleID: String) -> Bool {
+        guard automationStatus(bundleID) == -1744 else { return mayRead(bundleID) }
         let target = NSAppleEventDescriptor(bundleIdentifier: bundleID)
-        return AEDeterminePermissionToAutomateTarget(target.aeDesc, typeWildCard, typeWildCard, false) == noErr
+        return AEDeterminePermissionToAutomateTarget(target.aeDesc, typeWildCard, typeWildCard, true) == noErr
     }
 
     static func observe(_ location: AgentLocation, kind: String, frontmostPID: Int32?) -> TerminalObservation {

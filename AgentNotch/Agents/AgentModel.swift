@@ -91,6 +91,18 @@ struct AgentInfo: Identifiable, Decodable, Equatable {
         case cwd = "cwd"
     }
 
+    /// A conversation keeps its identity when Codex/opencode is reopened in a
+    /// new process or terminal. Results without a conversation ID stay tied to
+    /// the terminal incarnation that finished, so a reused pane is never read.
+    func sameConversation(as other: AgentInfo) -> Bool {
+        guard kind == other.kind else { return false }
+        if let lhs = location?.sessionID, !lhs.isEmpty,
+           let rhs = other.location?.sessionID, !rhs.isEmpty {
+            return lhs == rhs
+        }
+        return terminalID == other.terminalID
+    }
+
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id    = try c.decode(String.self, forKey: .id)
@@ -208,6 +220,19 @@ struct AgentActivity: Equatable {
                 completedAt[agent.id] = now
             }
         }
+        // Keep a pending result navigable after its conversation moves to a
+        // new process/terminal (Codex /resume, restarted TUI). Pane-only
+        // results keep their original terminal identity and are left alone.
+        var moved: [(String, AgentInfo)] = []
+        for (id, completed) in completedAgents {
+            guard let current = next.first(where: { $0.id == id }),
+                  current.state == .idle || current.state == .done,
+                  completed.sameConversation(as: current),
+                  completed.terminalID != current.terminalID || completed.location != current.location
+            else { continue }
+            moved.append((id, current))
+        }
+        for (id, current) in moved { completedAgents[id] = current }
         sequenceBaselines = sequenceBaselines.filter { id, baseline in
             next.contains { $0.id == id && $0.terminalID == baseline.terminalID }
         }
@@ -222,7 +247,8 @@ struct AgentActivity: Equatable {
         if sessionVisible {
             var seen: [String: UUID] = [:]
             for agent in next where agent.isFocused && (agent.state == .idle || agent.state == .done) {
-                guard completedAgents[agent.id]?.terminalID == agent.terminalID,
+                guard let completed = completedAgents[agent.id],
+                      completed.sameConversation(as: agent),
                       let token = completions[agent.id] else { continue }
                 seen[agent.id] = token
             }

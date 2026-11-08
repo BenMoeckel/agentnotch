@@ -184,6 +184,22 @@ struct ActivityTests {
         precondition(viewed.results.isEmpty && viewed.completions.count == 1, "Working sessions retain old results without appearing in both columns")
         viewed.update([try agent("idle", seq: 3, id: "b", terminal: "replacement", focused: true)], sessionVisible: true)
         precondition(viewed.results.count == 1, "Focusing a reused pane must not acknowledge a different terminal")
-        print("PASS: activity, retention, expiry, click acknowledgements, foreground/background focus and terminal identity")
+
+        var reopened = AgentActivity()
+        func conversation(_ state: AgentState, terminal: String, focused: Bool) -> AgentInfo {
+            AgentInfo(id: "session:codex:conversation", name: "codex", kind: "codex", state: state,
+                      terminalID: terminal, isFocused: focused,
+                      location: AgentLocation(sessionID: "conversation"))
+        }
+        reopened.update([conversation(.working, terminal: "old-process", focused: false)], sessionVisible: true)
+        reopened.update([conversation(.idle, terminal: "old-process", focused: false)], sessionVisible: true)
+        precondition(reopened.results.count == 1, "A background completion remains pending")
+        reopened.update([conversation(.idle, terminal: "new-process", focused: false)], sessionVisible: true)
+        precondition(reopened.results.first?.terminalID == "new-process",
+                     "A reopened conversation keeps its pending result navigable")
+        reopened.update([conversation(.idle, terminal: "new-process", focused: true)], sessionVisible: true)
+        precondition(reopened.results.isEmpty,
+                     "The same conversation in a new terminal acknowledges its result")
+        print("PASS: activity, retention, expiry, click acknowledgements, foreground/background focus, terminal identity and session identity")
     }
 }

@@ -101,10 +101,29 @@ enum SessionMerger {
             return left.id < right.id
         }
         var merged: [String: AgentInfo] = [:]
+        // One conversation can be visible in several frontends (for example a
+        // VS Code chat and an idle TUI in an unselected Herdr pane). A focus
+        // signal from any of them must survive the merge; a later unfocused
+        // copy may replace the location but not make the session unread.
+        func store(_ agent: AgentInfo) {
+            let k = key(agent)
+            guard let existing = merged[k] else { merged[k] = agent; return }
+            if existing.isFocused && !agent.isFocused {
+                // Keep the location of the frontend the user is actually
+                // looking at: the foreground recheck and result navigation
+                // must both target that application, not a background copy.
+                merged[k] = AgentInfo(id: agent.id, name: agent.name, kind: agent.kind, state: agent.state,
+                                      completionSequence: agent.completionSequence, completionSource: agent.completionSource,
+                                      terminalID: agent.terminalID, title: agent.title, isFocused: true,
+                                      location: existing.location)
+            } else {
+                merged[k] = agent
+            }
+        }
         for agent in ordered {
             // Herdr itself must confirm which conversation its visible pane owns.
             let focused = agent.isFocused && agent.location?.herdr == nil && !ambiguousTerminal(agent)
-            merged[key(agent)] = identified(agent, focused: focused)
+            store(identified(agent, focused: focused))
         }
         for snapshot in herdr {
             for pane in snapshot.agents {
@@ -155,7 +174,7 @@ enum SessionMerger {
                                      isFocused: pane.isFocused && innerVisible &&
                                         (snapshot.host?.isFocused ?? process?.isFocused ?? false), location: location)
                 if id != key(info) { merged.removeValue(forKey: id) }
-                merged[key(info)] = identified(info)
+                store(identified(info))
             }
         }
         for event in events {
@@ -169,8 +188,8 @@ enum SessionMerger {
                     terminalID: event.terminalID, title: event.title,
                     isFocused: existing.isFocused, location: existing.location)
             } else {
-                merged[key(event)] = identified(event, focused: event.isFocused &&
-                    event.location?.herdr == nil && !ambiguousTerminal(event))
+                store(identified(event, focused: event.isFocused &&
+                    event.location?.herdr == nil && !ambiguousTerminal(event)))
             }
         }
         return merged.values.sorted { $0.id.localizedStandardCompare($1.id) == .orderedAscending }
@@ -195,6 +214,7 @@ final class AgentClient: ObservableObject {
     private var providers: [String: HerdrProvider] = [:]
     private let editors = VSCodeIntegration()
     private let nativeSessions = NativeSessionIntegration()
+    private var automationRequested: Set<String> = []
 
     func connect() {
         guard timer == nil else { return }
@@ -319,8 +339,24 @@ final class AgentClient: ObservableObject {
                 self.systemAgents = routed
                 self.eventAgents = routedEvents
                 self.herdrHosts = hosts
+                self.requestAutomationIfNeeded(for: routed + routedEvents)
                 self.updateProviders()
                 self.publish()
+            }
+        }
+    }
+
+    /// Without Automation access the terminal cannot report which surface is
+    /// selected, so every completed turn would look unseen. Ask once for the
+    /// terminals that actually host an agent; never prompt on a poll.
+    private func requestAutomationIfNeeded(for agents: [AgentInfo]) {
+        let supported = Set([TerminalIntegration.ghostty, TerminalIntegration.terminal, TerminalIntegration.iterm])
+        let hosts = Set(agents.compactMap { $0.location?.bundleID }).intersection(supported)
+        for bundle in hosts where !automationRequested.contains(bundle) {
+            automationRequested.insert(bundle)
+            guard TerminalIntegration.automationStatus(bundle) == -1744 else { continue }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                _ = TerminalIntegration.requestAccessIfNeeded(bundle)
             }
         }
     }
@@ -361,7 +397,7 @@ final class AgentClient: ObservableObject {
     func focus(_ agent: AgentInfo, completion: @escaping (String?) -> Void) {
         guard !opening else { completion("A session is already being opened."); return }
         let candidates = agents + activity.results
-        guard let current = candidates.first(where: { $0.id == agent.id && $0.terminalID == agent.terminalID }),
+        guard let current = candidates.first(where: { $0.id == agent.id && $0.sameConversation(as: agent) }),
               let location = current.location else {
             completion("This session is no longer available.")
             return

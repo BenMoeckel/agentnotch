@@ -209,6 +209,34 @@ struct SessionVisibilityTests {
         ghosttyActivity.update([ghosttyAgent(.idle)], sessionVisible: true)
         precondition(ghosttyActivity.results.isEmpty,
                      "Opening the exact Ghostty TTY marks its completed result read")
-        print("PASS: all agent kinds, terminal/tmux/Herdr/nested visibility, background results, detached clients and lifecycle events")
+
+        // The same conversation can be visible in one frontend while another
+        // copy is unfocused (VS Code chat plus an idle TUI, or two Herdr panes).
+        var editorSurface = surface
+        editorSurface.sessionID = "shared"
+        editorSurface.herdr = nil
+        var tuiSurface = surface
+        tuiSurface.sessionID = "shared"
+        tuiSurface.applicationPID = 11
+        tuiSurface.herdr = HerdrLocation(socketPath: socket, paneID: "shared-pane")
+        let editorCopy = AgentInfo(id: "editor", name: "codex", kind: "codex", state: .idle,
+                                   terminalID: "editor", isFocused: true, location: editorSurface)
+        let tuiCopy = AgentInfo(id: "tui", name: "codex", kind: "codex", state: .idle,
+                                terminalID: "tui", isFocused: false, location: tuiSurface)
+        let copies = SessionMerger.merge(system: [editorCopy, tuiCopy], events: [], herdr: [])
+        precondition(copies.count == 1 && copies[0].isFocused && copies[0].location?.applicationPID == 10,
+                     "An unfocused duplicate must not hide or move a focused conversation")
+        let idlePane = AgentInfo(id: "shared-pane", name: "codex", kind: "codex", state: .idle,
+                                 isFocused: false, location: AgentLocation(sessionID: "shared"))
+        let copiesWithPane = SessionMerger.merge(system: [editorCopy, tuiCopy], events: [],
+            herdr: [HerdrSnapshot(socketPath: socket, agents: [idlePane], host: host)])
+        precondition(copiesWithPane.count == 1 && copiesWithPane[0].isFocused,
+                     "An unselected Herdr pane must not clear focus from another frontend")
+        let eventCopy = AgentInfo(id: "event", name: "codex", kind: "codex", state: .idle,
+                                  terminalID: "event", isFocused: false, location: AgentLocation(sessionID: "shared"))
+        let copiesWithEvent = SessionMerger.merge(system: [editorCopy], events: [eventCopy], herdr: [])
+        precondition(copiesWithEvent.count == 1 && copiesWithEvent[0].isFocused,
+                     "An unfocused lifecycle copy must not hide a focused conversation")
+        print("PASS: all agent kinds, terminal/tmux/Herdr/nested visibility, background results, detached clients, lifecycle events and duplicate representations")
     }
 }

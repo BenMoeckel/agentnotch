@@ -11,6 +11,29 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        if let index = CommandLine.arguments.firstIndex(of: "--check-automation"),
+           CommandLine.arguments.indices.contains(index + 1) {
+            let path = CommandLine.arguments[index + 1]
+            func installed(_ bundle: String) -> Bool {
+                NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundle) != nil
+            }
+            let report: [String: Any] = [
+                "ghosttyInstalled": installed(TerminalIntegration.ghostty),
+                "ghosttyAutomation": TerminalIntegration.mayRead(TerminalIntegration.ghostty),
+                "ghosttyStatus": TerminalIntegration.automationStatus(TerminalIntegration.ghostty),
+                "terminalInstalled": installed(TerminalIntegration.terminal),
+                "terminalAutomation": TerminalIntegration.mayRead(TerminalIntegration.terminal),
+                "terminalStatus": TerminalIntegration.automationStatus(TerminalIntegration.terminal),
+                "itermInstalled": installed(TerminalIntegration.iterm),
+                "itermAutomation": TerminalIntegration.mayRead(TerminalIntegration.iterm),
+                "itermStatus": TerminalIntegration.automationStatus(TerminalIntegration.iterm)
+            ]
+            if let data = try? JSONSerialization.data(withJSONObject: report, options: [.prettyPrinted, .sortedKeys]) {
+                try? data.write(to: URL(fileURLWithPath: path))
+            }
+            NSApp.terminate(nil)
+            return
+        }
         #if DEBUG
         if CommandLine.arguments.contains("--check-agent-sessions") || CommandLine.arguments.contains("--focus-agent") {
             client.connect()
