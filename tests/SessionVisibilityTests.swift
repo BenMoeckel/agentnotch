@@ -172,6 +172,36 @@ struct SessionVisibilityTests {
                          "Codex's attention title prefix must preserve exact conversation matching")
         }
 
+        // Herdr can attach a conversation to the wrong pane after switching
+        // tabs. The owning process carries its own HERDR_PANE_ID, so its pane
+        // must keep the conversation and the navigation target.
+        var caseLocation = surface
+        caseLocation.workingDirectory = "/work/case-study"
+        caseLocation.herdr = HerdrLocation(socketPath: socket, paneID: "case-pane")
+        caseLocation.sessionID = "case-session"
+        caseLocation.sessionName = "Case study"
+        let caseRow = AgentInfo(id: "case", name: "codex", kind: "codex", state: .idle,
+                                terminalID: "case-tui", title: "Case study", location: caseLocation)
+        var bergLocation = surface
+        bergLocation.workingDirectory = "/work/bergidyll"
+        bergLocation.herdr = HerdrLocation(socketPath: socket, paneID: "berg-pane")
+        let bergRow = AgentInfo(id: "berg", name: "codex", kind: "codex", state: .idle,
+                                terminalID: "berg-tui", title: "codex · bergidyll", location: bergLocation)
+        let casePane = AgentInfo(id: "case-pane", name: "codex", kind: "codex", state: .idle,
+                                 title: "Case study | case-study")
+        let bergPane = AgentInfo(id: "berg-pane", name: "codex", kind: "codex", state: .idle,
+                                 title: "Bergidyll", location: AgentLocation(sessionID: "case-session"))
+        let misattributed = SessionMerger.merge(system: [caseRow, bergRow], events: [],
+            herdr: [HerdrSnapshot(socketPath: socket, agents: [casePane, bergPane])])
+        let caseResult = misattributed.first { $0.location?.sessionID == "case-session" }
+        precondition(caseResult?.location?.herdr?.paneID == "case-pane",
+                     "A pane must not steal a conversation owned by another pane")
+        precondition(caseResult?.title == "Case study | case-study",
+                     "The conversation must keep the title of the pane where it runs")
+        let bergResult = misattributed.first { $0.location?.herdr?.paneID == "berg-pane" }
+        precondition(bergResult?.location?.sessionID == nil,
+                     "A rejected pane session must not be attached to that pane's process")
+
         precondition(TerminalIntegration.ghosttyVisible("surface\u{1e}/dev/ttys001\u{1e}1", surfaceID: nil, tty: nil),
                      "A single Ghostty surface works without an exported surface ID")
         precondition(!TerminalIntegration.ghosttyVisible("surface\u{1e}/dev/ttys001\u{1e}2", surfaceID: nil, tty: nil),

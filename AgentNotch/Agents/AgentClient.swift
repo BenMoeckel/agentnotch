@@ -128,13 +128,23 @@ enum SessionMerger {
         for snapshot in herdr {
             for pane in snapshot.agents {
                 let target = HerdrLocation(socketPath: snapshot.socketPath, paneID: pane.id)
+                // A process runs in the pane named by its own HERDR_PANE_ID.
+                // Herdr can carry a stale conversation attachment after a tab
+                // switch; that must not move the row (and its navigation target)
+                // away from the process that owns the conversation.
+                let conflictsWithOwner = pane.location?.sessionID.map { session in
+                    ordered.contains { agent in
+                        agent.kind == pane.kind && agent.location?.sessionID == session &&
+                            agent.location?.herdr != nil && agent.location?.herdr != target
+                    }
+                } ?? false
+                let session = conflictsWithOwner ? nil : pane.location?.sessionID
                 let exact = ordered.filter {
-                    pane.location?.sessionID != nil && $0.kind == pane.kind &&
-                    $0.location?.sessionID == pane.location?.sessionID
+                    session != nil && $0.kind == pane.kind && $0.location?.sessionID == session
                 }
                 var matches = exact.isEmpty ? ordered.filter {
                     $0.location?.herdr == target &&
-                    (pane.location?.sessionID == nil || $0.location?.sessionID == nil)
+                    (session == nil || $0.location?.sessionID == nil)
                 } : exact
                 // A TUI can retain several rollout files after /resume. Its exact
                 // explicit name in the live terminal title identifies the selected
@@ -158,7 +168,7 @@ enum SessionMerger {
                     location.tmux = host.tmux
                 }
                 location.herdr = target
-                location.sessionID = location.sessionID ?? pane.location?.sessionID
+                location.sessionID = location.sessionID ?? session
                 let id = process.map { key($0) } ?? target.id
                 let nativeState = process?.location?.sessionID != nil && process?.state != .unknown
                 // Herdr's live pane state is more specific than a native turn
