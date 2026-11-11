@@ -33,6 +33,7 @@
 		808D06BE438C5250818297B1 /* NotchBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14CC5D8982B5512589754788 /* NotchBarView.swift */; };
 		F0FA263774C65CD58535D755 /* UsageStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D6FF555F20547FB5A10DFF /* UsageStats.swift */; };
 		667EC73747C956C2838245AC /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8FDB603E060501BA18ACFA6 /* StatsView.swift */; };
+		F86EBD43EC3A526B8AC58176 /* AgentLimits.swift in Sources */ = {isa = PBXBuildFile; fileRef = D418A166B400548FA0221B57 /* AgentLimits.swift */; };
 		D6A9A95703295EEAB103C5CB /* UsageBackfill.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9100E9A06CD56DDB2BD4F85 /* UsageBackfill.swift */; };
 		FE2A2ACA41DB5C59BCCFFB55 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 014220AEC88F560FA873CC5E /* Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -67,6 +68,7 @@
 		E01CF76D74CF55C1AE61227D /* AgentNotch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AgentNotch.entitlements; sourceTree = "<group>"; };
 		F6D6FF555F20547FB5A10DFF /* UsageStats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageStats.swift; sourceTree = "<group>"; };
 		E8FDB603E060501BA18ACFA6 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
+		D418A166B400548FA0221B57 /* AgentLimits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentLimits.swift; sourceTree = "<group>"; };
 		B9100E9A06CD56DDB2BD4F85 /* UsageBackfill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageBackfill.swift; sourceTree = "<group>"; };
 		070ED390D748523F97D68D7F /* AgentNotch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AgentNotch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -129,6 +131,7 @@
 				C8C114562995594383FC1990 /* SessionNavigator.swift */,
 				F6D6FF555F20547FB5A10DFF /* UsageStats.swift */,
 				B9100E9A06CD56DDB2BD4F85 /* UsageBackfill.swift */,
+				D418A166B400548FA0221B57 /* AgentLimits.swift */,
 			);
 			path = Agents;
 			sourceTree = "<group>";
@@ -249,6 +252,7 @@
 				808D06BE438C5250818297B1 /* NotchBarView.swift in Sources */,
 				F0FA263774C65CD58535D755 /* UsageStats.swift in Sources */,
 				667EC73747C956C2838245AC /* StatsView.swift in Sources */,
+				F86EBD43EC3A526B8AC58176 /* AgentLimits.swift in Sources */,
 				D6A9A95703295EEAB103C5CB /* UsageBackfill.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

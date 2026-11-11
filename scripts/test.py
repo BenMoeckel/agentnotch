@@ -19,6 +19,7 @@ tests = {
     'HerdrProviderTests': common,
     'TmuxIntegrationTests': common,
     'UsageStatsTests': common,
+    'AgentLimitsTests': [root / 'AgentNotch/Agents/AgentLimits.swift'],
     'LayoutTests': [root / 'AgentNotch/Window/NotchDetector.swift'],
     'PanelRenderingTests': [root / f'AgentNotch/{path}' for path in ['Window/NotchPanel.swift', 'Window/NotchSpaceManager.swift', 'Window/CGSSpace.swift', 'Views/NotchShape.swift']],
 }

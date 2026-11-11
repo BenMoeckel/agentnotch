@@ -7,6 +7,7 @@ import SwiftUI
 struct StatsView: View {
     @ObservedObject var tracker: UsageTracker
     let range: StatsRange
+    @StateObject private var limits = AgentLimitsTracker()
 
     private var now: Date { Date() }
 
@@ -66,13 +67,20 @@ struct StatsView: View {
                 TrendCard(range: range, buckets: trendBuckets, total: trendTotal,
                           colors: agentColors, agents: agentUsage)
                 HStack(alignment: .top, spacing: 12) {
-                    AgentsCard(usage: agentUsage)
+                    AgentsCard(usage: agentUsage, limits: limits)
                     ProjectsCard(usage: projectUsage)
                 }
             }
             .padding(.horizontal, 12)
             .padding(.bottom, 12)
             .frame(maxWidth: .infinity)
+        }
+        .task {
+            while !Task.isCancelled {
+                await limits.refresh()
+                do { try await Task.sleep(for: .seconds(60)) }
+                catch { break }
+            }
         }
         .scrollIndicators(.automatic)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -139,21 +147,21 @@ private struct ActivityCard: View {
     @ObservedObject var tracker: UsageTracker
     let now: Date
 
-    private let weeks = 13
-    private let cell: CGFloat = 14
-    private let spacing: CGFloat = 4
+    @State private var selectedYear = Calendar.autoupdatingCurrent.component(.year, from: Date())
+
+    private var years: [Int] {
+        let currentYear = Calendar.autoupdatingCurrent.component(.year, from: now)
+        let recordedYears = tracker.history.days.keys.compactMap { Int($0.prefix(4)) }
+        return Array(Set(recordedYears.filter { $0 <= currentYear } + [currentYear, selectedYear]))
+            .sorted(by: >)
+    }
 
     private var columns: [[HeatmapDay]] {
         let calendar = Calendar.autoupdatingCurrent
         let today = calendar.startOfDay(for: now)
-        let currentWeek = calendar.dateInterval(of: .weekOfYear, for: today)?.start ?? today
-        let firstWeek = calendar.date(byAdding: .weekOfYear, value: -(weeks - 1), to: currentWeek) ?? today
-        return (0..<weeks).map { column in
-            (0..<7).compactMap { row -> HeatmapDay? in
-                guard let date = calendar.date(byAdding: .day, value: column * 7 + row, to: firstWeek) else {
-                    return nil
-                }
-                guard date <= today else {
+        return StatsActivityYear.columns(for: selectedYear, calendar: calendar).map { week in
+            week.map { date in
+                guard calendar.component(.year, from: date) == selectedYear, date <= today else {
                     return HeatmapDay(date: date, value: nil)
                 }
                 let usage = tracker.day(for: date) ?? UsageDay()
@@ -186,73 +194,83 @@ private struct ActivityCard: View {
     private var trackingLabel: String? {
         guard let start = tracker.trackingStart,
               let firstDay = columns.first?.first?.date,
-              start > firstDay else { return nil }
+              start > firstDay,
+              Calendar.autoupdatingCurrent.component(.year, from: start) == selectedYear else { return nil }
         return "since \(StatsFormat.shortDate(start))"
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
-                CardTitle(title: "Activity", systemImage: "square.grid.3x3.fill")
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("\(StatsFormat.duration(total)) working time in \(String(selectedYear))")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                 Spacer(minLength: 0)
-                HStack(spacing: 4) {
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 12, weight: .bold))
-                    Text("\(streak)")
-                        .font(.system(size: 13, weight: .semibold).monospacedDigit())
-                }
-                .foregroundStyle(streak > 0 ? Color.orange : Color.white.opacity(0.3))
-                .accessibilityLabel("Aktuelle Streak: \(streak) Tage")
+                Label("\(streak)", systemImage: "flame.fill")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(streak > 0 ? Color.orange : Color.white.opacity(0.3))
+                    .accessibilityLabel("Aktuelle Streak: \(streak) Tage")
             }
 
-            HStack(alignment: .top, spacing: 24) {
-                VStack(alignment: .trailing, spacing: 10) {
-                    Heatmap(columns: columns, cell: cell, spacing: spacing)
-                    HStack(spacing: 5) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Heatmap(columns: columns, year: selectedYear)
+                        .frame(height: 96)
+                    HStack(spacing: 6) {
+                        Text("\(activeDays) active days")
+                            .statsHover(busiest.map {
+                                "Busiest day: \(StatsFormat.shortDate($0.date)) · \(StatsFormat.duration($0.value ?? 0))"
+                            } ?? "No activity recorded")
+                        Spacer(minLength: 0)
+                        Text("Less")
                         ForEach(StatsPalette.heatmap.indices, id: \.self) { index in
-                            VStack(spacing: 4) {
-                                RoundedRectangle(cornerRadius: 2)
-                                    .fill(StatsPalette.heatmap[index])
-                                    .frame(height: 8)
-                                Text(StatsHeatmapScale.labels[index])
-                                    .fixedSize()
-                            }
-                            .frame(maxWidth: .infinity)
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(StatsPalette.heatmap[index])
+                                .frame(width: 8, height: 8)
+                                .statsHover(StatsHeatmapScale.labels[index])
                         }
+                        Text("More")
                     }
                     .font(.system(size: 9))
-                    .foregroundStyle(.white.opacity(0.4))
+                    .foregroundStyle(.white.opacity(0.5))
                 }
-                .frame(width: CGFloat(weeks) * cell + CGFloat(weeks - 1) * spacing,
-                       alignment: .topLeading)
+                .padding(12)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(.white.opacity(0.18), lineWidth: 1)
+                }
 
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(StatsFormat.duration(total))
-                        .font(.system(size: 30, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                    Text(trackingLabel.map { "\(weeks) weeks · \($0)" } ?? "\(weeks) weeks")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(.white.opacity(0.45))
-                        .lineLimit(1)
-
-                    if total <= 0 {
-                        Text("Local history is imported where available. Live usage is recorded while AgentNotch runs.")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.white.opacity(0.35))
-                            .fixedSize(horizontal: false, vertical: true)
+                ScrollView(.vertical) {
+                    VStack(spacing: 5) {
+                        ForEach(years, id: \.self) { year in
+                            Button {
+                                selectedYear = year
+                            } label: {
+                                Text(String(year))
+                                    .font(.system(size: 11, weight: .medium).monospacedDigit())
+                                    .foregroundStyle(selectedYear == year ? .white : .white.opacity(0.5))
+                                    .frame(width: 52, height: 30)
+                                    .background(selectedYear == year ? Color.blue : .clear,
+                                                in: RoundedRectangle(cornerRadius: 6))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Aktivitätsjahr \(String(year))")
+                            .accessibilityAddTraits(selectedYear == year ? .isSelected : [])
+                        }
                     }
-
-                    Spacer(minLength: 12)
-
-                    StatRow(label: "Active days", value: "\(activeDays)")
-                    StatRow(label: "Busiest day",
-                            value: busiest.map {
-                                "\(StatsFormat.shortDate($0.date)) · \(StatsFormat.duration($0.value ?? 0))"
-                            } ?? "—")
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .scrollIndicators(.hidden)
+                .frame(width: 52, height: 160)
+            }
+
+            if total <= 0 {
+                EmptyCardText("No activity recorded for this year. Local history is imported where available.")
+            } else if let trackingLabel {
+                Text("Recorded \(trackingLabel)")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.white.opacity(0.4))
             }
         }
         .padding(18)
@@ -269,29 +287,75 @@ private struct HeatmapDay: Identifiable {
 
 private struct Heatmap: View {
     let columns: [[HeatmapDay]]
-    let cell: CGFloat
-    let spacing: CGFloat
+    let year: Int
+    private let spacing: CGFloat = 2
+    private let labelWidth: CGFloat = 25
+
+    /// Place a month at the column containing its first day, including partial weeks.
+    private var months: [(column: Int, name: String)] {
+        let calendar = Calendar.autoupdatingCurrent
+        return columns.enumerated().compactMap { index, week in
+            guard let day = week.first(where: {
+                calendar.component(.year, from: $0.date) == year &&
+                calendar.component(.day, from: $0.date) == 1
+            }) else { return nil }
+            return (index, day.date.formatted(.dateTime.month(.abbreviated)))
+        }
+    }
 
     var body: some View {
-        HStack(alignment: .top, spacing: spacing) {
-            ForEach(columns.indices, id: \.self) { index in
-                VStack(spacing: spacing) {
-                    ForEach(columns[index]) { day in
-                        RoundedRectangle(cornerRadius: 3, style: .continuous)
-                            .fill(color(for: day.value))
-                            .frame(width: cell, height: cell)
-                            .opacity(day.value == nil ? 0.3 : 1)
-                            .statsHover(day.details)
+        GeometryReader { geometry in
+            let cell = max(1, (geometry.size.width - labelWidth - CGFloat(max(0, columns.count - 1)) * spacing)
+                           / CGFloat(max(1, columns.count)))
+            let step = cell + spacing
+            let rowStep = max(10, cell + spacing)
+            VStack(alignment: .leading, spacing: 6) {
+                ZStack(alignment: .topLeading) {
+                    Color.clear.frame(height: 13)
+                    ForEach(months, id: \.column) { month in
+                        Text(month.name)
+                            .font(.system(size: 9))
+                            .foregroundStyle(.white.opacity(0.65))
+                            .fixedSize()
+                            .offset(x: labelWidth + CGFloat(month.column) * step)
+                    }
+                }
+                HStack(alignment: .top, spacing: 0) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(0..<7) { row in
+                            Text(weekdayLabel(row))
+                                .font(.system(size: 8))
+                                .foregroundStyle(.white.opacity(0.6))
+                                .frame(height: rowStep, alignment: .center)
+                        }
+                    }
+                    .frame(width: labelWidth, alignment: .leading)
+                    HStack(alignment: .top, spacing: spacing) {
+                        ForEach(columns.indices, id: \.self) { index in
+                            VStack(spacing: 0) {
+                                ForEach(columns[index]) { day in
+                                    RoundedRectangle(cornerRadius: 1.5, style: .continuous)
+                                        .fill(StatsPalette.heatmap[StatsHeatmapScale.level(for: day.value ?? 0)])
+                                        .frame(width: cell, height: min(cell, 11))
+                                        .opacity(day.value == nil ? 0 : 1)
+                                        .frame(height: rowStep)
+                                        .statsHover(day.details)
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("Aktivität der letzten 13 Wochen")
+        .accessibilityLabel("Aktivität im Jahr \(String(year))")
     }
 
-    private func color(for value: Double?) -> Color {
-        StatsPalette.heatmap[StatsHeatmapScale.level(for: value ?? 0)]
+    private func weekdayLabel(_ row: Int) -> String {
+        let calendar = Calendar.autoupdatingCurrent
+        let weekday = (calendar.firstWeekday - 1 + row) % 7
+        // Label Monday, Wednesday and Friday regardless of the locale's week start.
+        return [1, 3, 5].contains(weekday) ? calendar.shortWeekdaySymbols[weekday] : ""
     }
 }
 
@@ -423,24 +487,43 @@ private struct TrendChart: View {
 
 private struct AgentsCard: View {
     let usage: [AgentUsage]
+    @ObservedObject var limits: AgentLimitsTracker
+
+    private var kinds: [String] {
+        Array(Set(usage.map(\.kind) + (limits.codex == nil ? [] : ["codex"]))).sorted()
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 CardTitle(title: "Agents", systemImage: "cpu")
                 Spacer(minLength: 0)
-                Text("\(usage.count)")
-                    .font(.system(size: 11, weight: .medium).monospacedDigit())
-                    .foregroundStyle(.white.opacity(0.35))
+                Text("Limits")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.45))
             }
-
-            if usage.isEmpty {
-                EmptyCardText("No agent activity yet")
-            } else {
-                VStack(spacing: 10) {
-                    ForEach(usage) { item in
-                        UsageRow(icon: .agent(item.kind), name: AgentLabel.name(for: item.kind),
-                                 seconds: item.seconds, total: usageTotal, color: item.color)
+            if kinds.isEmpty {
+                EmptyCardText(limits.loading ? "Loading limits…" : "No local limit data available")
+            }
+            ForEach(kinds, id: \.self) { kind in
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 6) {
+                        AgentIcon(kind: kind, color: .white, size: 14)
+                        Text(AgentLabel.name(for: kind))
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.white)
+                    }
+                    if kind == "codex", let snapshot = limits.codex {
+                        ForEach(snapshot.windows) { window in
+                            LimitWindowRow(window: window)
+                        }
+                        Text("Updated \(snapshot.observedAt.formatted(date: .abbreviated, time: .shortened))")
+                            .font(.system(size: 9))
+                            .foregroundStyle(.white.opacity(0.35))
+                    } else {
+                        Text("Limit data unavailable")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.white.opacity(0.4))
                     }
                 }
             }
@@ -450,9 +533,32 @@ private struct AgentsCard: View {
         .frame(maxWidth: .infinity, minHeight: 160, alignment: .topLeading)
         .background(CardBackground())
     }
+}
 
-    private var usageTotal: Double {
-        usage.reduce(0) { $0 + $1.seconds }
+private struct LimitWindowRow: View {
+    let window: AgentLimitWindow
+
+    var body: some View {
+        let expired = window.resetsAt <= Date()
+        let color: Color = window.usedPercent >= 90 ? .red : window.usedPercent >= 75 ? .orange : .green
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text(window.label)
+                Spacer(minLength: 4)
+                Text(expired ? "Awaiting update" : "\(Int(window.usedPercent.rounded()))% used")
+                    .monospacedDigit()
+            }
+            .font(.system(size: 10, weight: .medium))
+            .foregroundStyle(.white.opacity(0.65))
+            if !expired {
+                UsageBar(progress: window.usedPercent / 100, color: color)
+                    .frame(height: 4)
+                Text("Resets \(window.resetsAt.formatted(date: .abbreviated, time: .shortened))")
+                    .font(.system(size: 9))
+                    .foregroundStyle(.white.opacity(0.4))
+            }
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -688,11 +794,11 @@ private struct EmptyCardText: View {
 
 private enum StatsPalette {
     static let heatmap: [Color] = [
-        Color(white: 0.13),
-        Color(red: 0.38, green: 0.16, blue: 0.05),
-        Color(red: 0.65, green: 0.27, blue: 0.06),
-        Color(red: 0.91, green: 0.43, blue: 0.10),
-        Color(red: 1.00, green: 0.65, blue: 0.25)
+        Color(red: 0.09, green: 0.11, blue: 0.13),
+        Color(red: 0.07, green: 0.23, blue: 0.12),
+        Color(red: 0.17, green: 0.43, blue: 0.21),
+        Color(red: 0.28, green: 0.64, blue: 0.31),
+        Color(red: 0.47, green: 0.83, blue: 0.39)
     ]
     static let colors: [Color] = [
         Color(red: 0.49, green: 0.49, blue: 1.00),

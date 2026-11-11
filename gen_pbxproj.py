@@ -15,7 +15,7 @@ def uid():
 # New files use stable IDs so appending them does not renumber every existing
 # build file and group ID (which would turn a two-file addition into a huge
 # project.pbxproj diff).
-STABLE_FILE_IDS = {"UsageStats.swift", "StatsView.swift", "UsageBackfill.swift"}
+STABLE_FILE_IDS = {"UsageStats.swift", "StatsView.swift", "UsageBackfill.swift", "AgentLimits.swift"}
 
 def file_uid(name):
     if name in STABLE_FILE_IDS:
@@ -58,6 +58,7 @@ FILES = [
     ("AgentNotch.entitlements",      "AgentNotch/AgentNotch.entitlements"),
     ("UsageStats.swift",             "AgentNotch/Agents/UsageStats.swift"),
     ("StatsView.swift",              "AgentNotch/Views/StatsView.swift"),
+    ("AgentLimits.swift",            "AgentNotch/Agents/AgentLimits.swift"),
     ("UsageBackfill.swift",          "AgentNotch/Agents/UsageBackfill.swift"),
 ]
 
@@ -182,6 +183,7 @@ pbx += f"""/* End PBXFileReference section */
 \t\t\t\t{ids["SessionNavigator.swift"]} /* SessionNavigator.swift */,
 \t\t\t\t{ids["UsageStats.swift"]} /* UsageStats.swift */,
 \t\t\t\t{ids["UsageBackfill.swift"]} /* UsageBackfill.swift */,
+\t\t\t\t{ids["AgentLimits.swift"]} /* AgentLimits.swift */,
 \t\t\t);
 \t\t\tpath = Agents;
 \t\t\tsourceTree = "<group>";

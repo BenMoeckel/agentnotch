@@ -12,6 +12,26 @@ struct UsageStatsTests {
     static func main() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        // Calendar-year heatmaps cover every day once, including leap days and
+        // years spanning 54 calendar weeks, regardless of the first weekday.
+        for firstWeekday in [1, 2] {
+            var heatmapCalendar = calendar
+            heatmapCalendar.firstWeekday = firstWeekday
+            for year in [2012, 2024, 2026] {
+                let columns = StatsActivityYear.columns(for: year, calendar: heatmapCalendar)
+                let days = columns.flatMap { $0 }.filter {
+                    heatmapCalendar.component(.year, from: $0) == year
+                }
+                precondition(columns.allSatisfy { $0.count == 7 })
+                precondition(days.count == (year == 2026 ? 365 : 366))
+                precondition(Set(days).count == days.count)
+                precondition(heatmapCalendar.component(.day, from: days.first!) == 1)
+                precondition(heatmapCalendar.component(.month, from: days.last!) == 12)
+                precondition(heatmapCalendar.component(.day, from: days.last!) == 31)
+                precondition(heatmapCalendar.component(.weekday, from: columns[0][0]) == firstWeekday)
+            }
+        }
+
         let base = calendar.date(from: DateComponents(year: 2026, month: 11, day: 8, hour: 12))!
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("agentnotch-usage-\(UUID().uuidString).json")

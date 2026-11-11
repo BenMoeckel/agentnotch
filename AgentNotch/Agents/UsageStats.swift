@@ -1,10 +1,9 @@
 import Combine
 import Foundation
 
-/// Selectable window for the statistics dashboard. Activity always shows the
-/// last 13 weeks (like the reference design); this range drives trend, agents
-/// and projects.
+/// Selectable window for trend, agents and projects. Activity has its own year selection.
 enum StatsRange: String, CaseIterable, Identifiable {
+    case daily = "Daily"
     case month = "30 days"
     case quarter = "90 days"
     case year = "1 year"
@@ -14,6 +13,7 @@ enum StatsRange: String, CaseIterable, Identifiable {
 
     var days: Int? {
         switch self {
+        case .daily: 1
         case .month: 30
         case .quarter: 90
         case .year: 365
@@ -23,6 +23,7 @@ enum StatsRange: String, CaseIterable, Identifiable {
 
     var shortLabel: String {
         switch self {
+        case .daily: "Daily"
         case .month: "30d"
         case .quarter: "90d"
         case .year: "1y"
@@ -32,7 +33,7 @@ enum StatsRange: String, CaseIterable, Identifiable {
 
     var granularity: StatsGranularity {
         switch self {
-        case .month: .day
+        case .daily, .month: .day
         case .quarter: .week
         case .year, .allTime: .month
         }
@@ -69,6 +70,23 @@ enum StatsHeatmapScale {
         case ..<14400: 3
         default: 4
         }
+    }
+}
+
+/// Complete calendar weeks covering a year, including padding at both ends.
+enum StatsActivityYear {
+    static func columns(for year: Int, calendar: Calendar = .autoupdatingCurrent) -> [[Date]] {
+        guard let start = calendar.date(from: DateComponents(year: year, month: 1, day: 1)),
+              let end = calendar.date(byAdding: .year, value: 1, to: start),
+              let firstWeek = calendar.dateInterval(of: .weekOfYear, for: start)?.start else { return [] }
+        var columns: [[Date]] = []
+        var week = firstWeek
+        while week < end {
+            columns.append((0..<7).compactMap { calendar.date(byAdding: .day, value: $0, to: week) })
+            guard let next = calendar.date(byAdding: .day, value: 7, to: week) else { break }
+            week = next
+        }
+        return columns
     }
 }
 
