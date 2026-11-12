@@ -4,6 +4,7 @@ import Foundation
 /// Selectable window for trend, agents and projects. Activity has its own year selection.
 enum StatsRange: String, CaseIterable, Identifiable {
     case daily = "Daily"
+    case weekly = "Weekly"
     case month = "30 days"
     case quarter = "90 days"
     case year = "1 year"
@@ -14,6 +15,7 @@ enum StatsRange: String, CaseIterable, Identifiable {
     var days: Int? {
         switch self {
         case .daily: 1
+        case .weekly: 7
         case .month: 30
         case .quarter: 90
         case .year: 365
@@ -24,6 +26,7 @@ enum StatsRange: String, CaseIterable, Identifiable {
     var shortLabel: String {
         switch self {
         case .daily: "Daily"
+        case .weekly: "Weekly"
         case .month: "30d"
         case .quarter: "90d"
         case .year: "1y"
@@ -33,7 +36,7 @@ enum StatsRange: String, CaseIterable, Identifiable {
 
     var granularity: StatsGranularity {
         switch self {
-        case .daily, .month: .day
+        case .daily, .weekly, .month: .day
         case .quarter: .week
         case .year, .allTime: .month
         }
